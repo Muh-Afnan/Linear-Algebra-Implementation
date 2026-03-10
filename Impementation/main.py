@@ -1,4 +1,4 @@
-class MatrixValidation:
+class MatrixOperations:
     def validate_addition(self,array):
         try:
             orders = [self.find_order(matrix) for matrix in array]
@@ -53,7 +53,7 @@ class MatrixValidation:
                 result = self.matrix_add(result,matrix)
             return result
 
-    def matrix_multiply(self,matrix1, matrix2):
+    def element_matrix_multiply(self,matrix1, matrix2):
         result = [[item1*item2 for item1,item2 in zip(row1,row2)] for row1,row2 in zip(matrix1,matrix2)]
         return result
 
@@ -62,19 +62,19 @@ class MatrixValidation:
         if self.validate_addition(array):
             result = array[0]
             for matrix in array[1:]:
-                result = self.matrix_multiply(result,matrix)
+                result = self.element_matrix_multiply(result,matrix)
             return result       
     
     def matrix_multiply(self, matrix1,matrix2):
-        item2_trans = list(zip(*matrix2))
+        item2_trans = [list(row) for row in zip(*matrix2)]
         result = []
         for m1_row in matrix1:
             row = []
             for m2_row in item2_trans:
-                sum = 0
+                sum_matrix = 0
                 for item1,item2 in zip(m1_row,m2_row):
-                    sum += item1*item2
-                row.append(sum)
+                    sum_matrix += item1*item2
+                row.append(sum_matrix)
             result.append(row)
         return result
       
@@ -92,25 +92,25 @@ class MatrixValidation:
             print(f"Matrix Not in order for Dot product")
 
     def matrix_transpose(self,matrix):
-        return list(zip(*matrix))
+        return [list(row) for row in zip(*matrix)]
     
     def row_operation(self,matrix,r1,r2):
-        matrix_new = matrix[r1]
-        matrix[r1] = matrix[r2]
-        matrix[r2] = matrix_new
-        return matrix
+        matrix_new = matrix.copy()
+        matrix_new[r1-1] = matrix[r2-1]
+        matrix_new[r2-1] = matrix[r1-1]
+        return matrix_new, matrix
 
-    def sum_of_diagonal(self,matrix):
-        sum = 0
+    def sum_matrix_of_diagonal(self,matrix):
+        sum_matrix = 0
+        number = 0
         for row in matrix:
-            number = 0
-            sum +=row[number]
+            sum_matrix +=row[number]
             number +=1
-        return sum
+        return sum_matrix
     
     def row_addition(self, matrix,row1,row2):
-        sum = [item1+item2 for item1,item2 in zip(matrix[row1-1],matrix[row2-1])]
-        matrix[row1-1] = sum
+        sum_matrix = [item1+item2 for item1,item2 in zip(matrix[row1-1],matrix[row2-1])]
+        matrix[row1-1] = sum_matrix
         return matrix
     
     def row_scaling(self,matrix,row,factor):
@@ -124,32 +124,63 @@ class MatrixValidation:
                 if item !=0:
                     return False
         return True
+    
+    def is_square(self,matrix):
+        order = self.find_order(matrix)
+        if order[0] == order[1]:
+            return True
+        return False
+    
+    def is_symmetric(self,matrix):
+        if self.is_square(matrix):
+            matrix_trans = self.matrix_transpose(matrix)
+            for row1,row2 in zip(matrix,matrix_trans):
+                if row1 != row2:
+                    return False
+            return True
+        else:
+            raise ValueError("Matrix is not Square, hence cannot be symmetric")
+        
 
-# matrix = [[1,2],[112,8],[2,3]]
-# matrix2 = [[1,2,3],[112,56,8],[1,2,3]]
-# matrix3 = [[1,2,3],[112,56,8],[1,2,3]]
-# matrix4 = [[1,2],[2,2]]
+    def is_skew_symmetric(self,matrix):
+        if self.is_square(matrix):
+            matrix_trans = self.matrix_transpose(matrix)
+            for row1,row2 in zip(matrix,matrix_trans):
+                for item1,item2 in zip(row1,row2):
+                    if item1 != -item2:
+                        return False
+            return True
+        else:
+            raise ValueError("Matrix is not Square, hence cannot be skew-symmetric")
+        
+    def is_diagonal(self,matrix):
+        if self.is_square(matrix):
+            order = self.find_order(matrix)
+            for i in range(order[0]):
+                for j in range(order[1]):
+                    if i==j and matrix[i][j] ==0:
+                        return False
+            return True
+        else:
+            raise ValueError("Matrix is not Square, hence cannot be Diagonal")
+        
+    def is_identity(self,matrix):
+        if self.is_square(matrix):
+            order = self.find_order(matrix)
+            for i in range(order[0]):
+                for j in range(order[1]):
+                    if i==j and matrix[i][j] !=1:
+                        return False
+                    elif i!=j and matrix[i][j] !=0:
+                        return False
+            return True
+        else:
+            raise ValueError("Matrix is not Square, hence cannot be Identity")
 
-m1 = [[1,2,3],[4,5,6]]
-m3 = [[1,2],[3,4],[5,6]]
-m2 = [[1,2],[3,4],[3,4],[3,4],[3,4]]
-m_zero = [[0,0,0],[0,0,0]]
-
-mat_op = MatrixValidation()
-# # print(mat_op.validate_addition(matrix,matrix2,matrix3))
-# # print(mat_op.scalar_multiplication(matrix=matrix,number=6))
-# # print(mat_op.scalar_addition(matrix=matrix,number=6))
-# # print(mat_op.matrix_addition(matrix,matrix2))
-# print(mat_op.matrix_chain_multiply(m1,m2,m3))
-# print(mat_op.sum_of_diagonal(m1))
-# print(mat_op.zero_matrix_check(m_zero))
-# print(mat_op.zero_matrix_check(m1))
-
-# print(mat_op.row_addition(m1,1,2))
-(print(mat_op.sum_of_diagonal(m2)))
+    def cofactor(self,matrix):
+        if self.is_square(matrix):
+            order = self.find_order(matrix)
+        
 
 
-
-
-
-
+    
