@@ -176,11 +176,56 @@ class MatrixOperations:
             return True
         else:
             raise ValueError("Matrix is not Square, hence cannot be Identity")
-
-    def cofactor(self,matrix):
+        
+    def build_identity(self,number):
+        order = number
+        identity = []
+        for i in range(order):
+            row = []
+            for j in range(order):
+                if i==j:
+                    row.append(1)
+                else:
+                    row.append(0)
+            identity.append(row)
+        return identity
+    
+    def calculate_minor(self, number, matrix):
         if self.is_square(matrix):
             order = self.find_order(matrix)
-        
+            if order[0]==2 and order[1]==2:
+                val_1 = matrix[0][0]*matrix[1][1]
+                val_2 = matrix[0][1]*matrix[1][0]
+                det = val_1 - val_2
+                return number*det
+            else:
+                self.cal_cofactor(matrix)
+    
+    def build_determinate(self, i,j,matrix):
+        matrix_end = matrix[i:]
+        matrix_start = matrix[:i]
+        row_elimented = [matrix_start,matrix_end]
+        matrix_trans = [list(row) for row in zip(*row_elimented)]
+        matrix_col_end = matrix_trans[j:]
+        matrix_col_start = matrix_trans[:j]
+        return [matrix_col_start,matrix_col_end]
+
+
+    def cal_cofactor(self,matrix):
+        if self.is_square(matrix):
+            order = self.find_order(matrix)
+            det = []
+            for i in range(order[0]):
+                row = []
+                for j in range(order[1]):
+                    val = matrix[i][j]
+                    matrix_det = self.build_determinate(i,j,matrix)
+                    deter = self.calculate_minor(val,matrix_det)
+                    sign = (-1)**(i+j)
+                    cofactor = sign*deter
+                    row.append(cofactor)
+                det.append(row)
+            return det
 
 
     

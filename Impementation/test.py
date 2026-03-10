@@ -1,4 +1,4 @@
-from main import MatrixValidation
+from main import MatrixOperations
 
 # matrix = [[1,2],[112,8],[2,3]]
 # matrix2 = [[1,2,3],[112,56,8],[1,2,3]]
@@ -10,7 +10,7 @@ m3 = [[1,2],[3,4],[5,6]]
 m2 = [[1,2],[3,4],[3,4],[3,4],[3,4]]
 m_zero = [[0,0,0],[0,0,0]]
 
-mat_op = MatrixValidation()
+mat_op = MatrixOperations()
 # # print(mat_op.validate_addition(matrix,matrix2,matrix3))
 # # print(mat_op.scalar_multiplication(matrix=matrix,number=6))
 # # print(mat_op.scalar_addition(matrix=matrix,number=6))
@@ -22,6 +22,7 @@ mat_op = MatrixValidation()
 
 # print(mat_op.row_addition(m1,1,2))
 # (print(mat_op.sum_of_diagonal(m2)))
-(print(mat_op.matrix_transpose(m1)))
+# (print(mat_op.matrix_transpose(m1)))
+# print(mat_op.build_identity(4))
 
 
