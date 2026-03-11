@@ -85,8 +85,6 @@ class MatrixOperations:
         try: 
             if self.validate_dot_product(array):
                 result = array[0]
-                print(f"array: {array}")
-                print(f"len: {len(array)}")
                 for matrix in array[1:]:
                     result = self.matrix_multiply(result, matrix)
                 return result
@@ -160,7 +158,7 @@ class MatrixOperations:
             order = self.find_order(matrix)
             for i in range(order[0]):
                 for j in range(order[1]):
-                    if i==j and matrix[i][j] ==0:
+                    if i!=j and matrix[i][j] !=0 or i==j and matrix[i][j] !=1:
                         return False
             return True
         else:
@@ -194,7 +192,7 @@ class MatrixOperations:
     
 
     def calculate_determinant(self,matrix):
-        if self.is_square(matrix):
+        if not self.is_square(matrix):
             raise ValueError("Determinant only exists for square matrices")
         order = self.find_order(matrix)
         if order[0]==1 and order[1]==1:
