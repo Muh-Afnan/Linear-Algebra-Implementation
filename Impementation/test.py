@@ -6,6 +6,7 @@ from main import MatrixOperations
 # matrix4 = [[1,2],[2,2]]
 
 m1 = [[1,2,3],[4,5,6]]
+m4 = [[1,2,3],[4,5,6],[7,8,9]]
 m3 = [[1,2],[3,4],[5,6]]
 m2 = [[1,2],[3,4],[3,4],[3,4],[3,4]]
 m_zero = [[0,0,0],[0,0,0]]
@@ -24,5 +25,6 @@ mat_op = MatrixOperations()
 # (print(mat_op.sum_of_diagonal(m2)))
 # (print(mat_op.matrix_transpose(m1)))
 # print(mat_op.build_identity(4))
+print(mat_op.cal_cofactor(m4))
 
 
