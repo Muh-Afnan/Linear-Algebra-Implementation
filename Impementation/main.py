@@ -1,37 +1,39 @@
-
+import copy
 
 class MatrixOperations:
-    def validate_addition(self,array):
-        try:
-            orders = [self.find_order(matrix) for matrix in array]
-            if len(set(orders))!=1:
-                raise ValueError("Matrix dimensions not compatible for addition")
-            return True
-        except ValueError as e:
-            return False
+    def validate_addition(self, array):
+        orders = [self.find_order(matrix) for matrix in array]
+        if len(set(orders)) != 1:
+            raise ValueError(
+                f"Matrix dimensions not compatible for addition. "
+                f"Got shapes: {orders}"
+            )
+        return True
+
     
     def validate_dot_product(self, array):
-        try:
-            orders = [self.find_order(matrix) for matrix in array]
-            for idx in range(len(orders)-1):
-                if orders[idx][1] != orders[idx+1][0]:
-                    raise ValueError("Matrix dimensions not compatible for multiplication")
-            return True
-        except ValueError as e:
-            print(e)
-            return False
+        orders = [self.find_order(matrix) for matrix in array]
+        for idx in range(len(orders) - 1):
+            if orders[idx][1] != orders[idx+1][0]:
+                raise ValueError(
+                    f"Cannot multiply: matrix[{idx}] has shape {orders[idx]} "
+                    f"and matrix[{idx+1}] has shape {orders[idx+1]}. "
+                    f"Inner dimensions must match: {orders[idx][1]} != {orders[idx+1][0]}"
+                )
+        return True
         
-    def find_order(self,matrix):
-        try:
-            rows = len(matrix)
-            if rows<1:
-                raise ValueError ("Matrix is Empty")
-            cols = [len(row) for row in matrix]
-            if len(set(cols))!=1:
-                raise ValueError ("Non Equal number of Columns found in rows")
-            return (rows,cols[0])
-        except ValueError as e:
-            print (f"Caught an exception: {e}")
+    def find_order(self, matrix):
+        rows = len(matrix)
+        if rows < 1:
+            raise ValueError("Matrix is Empty")
+        cols = [len(row) for row in matrix]
+        if len(set(cols)) != 1:
+            raise ValueError(
+                f"Inconsistent row lengths found: {cols}. "
+                "All rows must have equal number of columns."
+            )
+        return (rows, cols[0])
+
     
     def scalar_addition(self, number, matrix:list[list[int|float]]):
         if self.validate_addition([matrix]):
@@ -80,43 +82,60 @@ class MatrixOperations:
             result.append(row)
         return result
       
-    def matrix_chain_multiply(self,matrix1:list[list[int|float]], matrix2:list[list[int|float]],*othermatrix):
-        array = [matrix1,matrix2,*othermatrix]
-        try: 
-            if self.validate_dot_product(array):
-                result = array[0]
-                for matrix in array[1:]:
-                    result = self.matrix_multiply(result, matrix)
-                return result
+    def matrix_chain_multiply(self, matrix1, matrix2, *othermatrix):
+        array = [matrix1, matrix2, *othermatrix]
+        try:
+            self.validate_dot_product(array)
         except ValueError as e:
-            print(f"Matrix Not in order for Dot product")
+            raise ValueError(
+                f"Chain multiplication failed: {e}"
+            ) from e          # 'from e' preserves original traceback
+        result = array[0]
+        for matrix in array[1:]:
+            result = self.matrix_multiply(result, matrix)
+        return result
 
     def matrix_transpose(self,matrix):
         return [list(row) for row in zip(*matrix)]
     
     def row_operation(self,matrix,r1,r2):
-        matrix_new = matrix.copy()
-        matrix_new[r1-1] = matrix[r2-1]
-        matrix_new[r2-1] = matrix[r1-1]
-        return matrix_new, matrix
+        n = len(matrix)
+        if not (1 <= r1 <= n and 1 <= r2 <= n):
+            raise ValueError(
+                f"Row indices {r1}, {r2} out of range for matrix with {n} rows. "
+                "Rows are 1-indexed."
+            )
+        matrix_new = copy.deepcopy(matrix)
+        matrix_new[r1-1], matrix_new[r2-1] = matrix_new[r2-1], matrix_new[r1-1]
+        return matrix_new
 
     def sum_matrix_of_diagonal(self,matrix):
-        sum_matrix = 0
-        number = 0
-        for row in matrix:
-            sum_matrix +=row[number]
-            number +=1
-        return sum_matrix
+        if not self.is_square(matrix):
+            raise ValueError ("Trace is only defined for square matrices")
+        return sum(matrix[i][i] for i in range(len(matrix)))
+
     
     def row_addition(self, matrix,row1,row2):
+        n = len(matrix)
+        if not (1 <= row1 <= n and 1 <= row2 <= n):
+            raise ValueError(
+                f"Row indices {row1}, {row2} out of range for {n}-row matrix"
+            )
         sum_matrix = [item1+item2 for item1,item2 in zip(matrix[row1-1],matrix[row2-1])]
-        matrix[row1-1] = sum_matrix
-        return matrix
+        matrix_new = copy.deepcopy(matrix)
+        matrix_new[row1-1] = sum_matrix
+        return matrix_new
     
     def row_scaling(self,matrix,row,factor):
+        n = len(matrix)
+        if not (1 <= row <= n):
+            raise ValueError(
+                f"Row index {row} out of range for {n}-row matrix"
+            )
         scaled_row = [item * factor for item in matrix[row-1]]
-        matrix[row-1] = scaled_row
-        return matrix
+        matrix_new = copy.deepcopy(matrix)
+        matrix_new[row-1] = scaled_row
+        return matrix,matrix_new
     
     def zero_matrix_check(self,matrix):
         for row in matrix:
@@ -127,55 +146,46 @@ class MatrixOperations:
     
     def is_square(self,matrix):
         order = self.find_order(matrix)
-        if order[0] == order[1]:
-            return True
-        return False
+        return order[0] == order[1]
     
     def is_symmetric(self,matrix):
-        if self.is_square(matrix):
-            matrix_trans = self.matrix_transpose(matrix)
-            for row1,row2 in zip(matrix,matrix_trans):
-                if row1 != row2:
-                    return False
-            return True
-        else:
-            raise ValueError("Matrix is not Square, hence cannot be symmetric")
-        
+        if not self.is_square(matrix):
+            raise ValueError("Matrix must be square to check symmetry")
+        return matrix == self.matrix_transpose(matrix)
 
-    def is_skew_symmetric(self,matrix):
-        if self.is_square(matrix):
-            matrix_trans = self.matrix_transpose(matrix)
-            for row1,row2 in zip(matrix,matrix_trans):
-                for item1,item2 in zip(row1,row2):
-                    if item1 != -item2:
-                        return False
-            return True
-        else:
-            raise ValueError("Matrix is not Square, hence cannot be skew-symmetric")
+
+    def is_skew_symmetric(self, matrix):
+        if not self.is_square(matrix):
+            raise ValueError("Matrix must be square to check skew-symmetry")
+        trans = self.matrix_transpose(matrix)
+        return all(
+            matrix[i][j] == -trans[i][j]
+            for i in range(len(matrix))
+            for j in range(len(matrix[0]))
+        )
         
     def is_diagonal(self,matrix):
-        if self.is_square(matrix):
-            order = self.find_order(matrix)
-            for i in range(order[0]):
-                for j in range(order[1]):
-                    if i!=j and matrix[i][j] !=0 or i==j and matrix[i][j] !=1:
-                        return False
-            return True
-        else:
-            raise ValueError("Matrix is not Square, hence cannot be Diagonal")
+        if not self.is_square(matrix):
+            raise ValueError("Matrix must be square to check diagonal property")
+        order = self.find_order(matrix)
+        for i in range(order[0]):
+            for j in range(order[1]):
+                if i!=j and matrix[i][j] !=0:
+                    return False
+        return True
         
     def is_identity(self,matrix):
-        if self.is_square(matrix):
-            order = self.find_order(matrix)
-            for i in range(order[0]):
-                for j in range(order[1]):
-                    if i==j and matrix[i][j] !=1:
-                        return False
-                    elif i!=j and matrix[i][j] !=0:
-                        return False
-            return True
-        else:
-            raise ValueError("Matrix is not Square, hence cannot be Identity")
+        if not self.is_square(matrix):
+            raise ValueError("Matrix must be square to check identity property")
+        order = self.find_order(matrix)
+        for i in range(order[0]):
+            for j in range(order[1]):
+                if i==j and matrix[i][j] !=1:
+                    return False
+                elif i!=j and matrix[i][j] !=0:
+                    return False
+        return True
+
         
     def build_identity(self,number):
         order = number
@@ -193,12 +203,15 @@ class MatrixOperations:
 
     def calculate_determinant(self,matrix):
         if not self.is_square(matrix):
-            raise ValueError("Determinant only exists for square matrices")
+            raise ValueError(
+                f"Determinant requires a square matrix. Got shape: {self.find_order(matrix)}"
+            )
+        n = len(matrix)
         order = self.find_order(matrix)
-        if order[0]==1 and order[1]==1:
+        if n == 1:
             return matrix[0][0]
         
-        if order[0]==2 and order[1]==2:
+        if n==2:
             val_1 = matrix[0][0]*matrix[1][1]
             val_2 = matrix[0][1]*matrix[1][0]
             return val_1 - val_2
@@ -221,9 +234,10 @@ class MatrixOperations:
 
 
     def cal_cofactor(self,matrix):
-        if self.is_square(matrix):
-            raise ValueError("Cofactor only exists for square matrices")
-
+        if not self.is_square(matrix):
+            raise ValueError(
+                f"Cofactor requires a square matrix. Got shape: {self.find_order(matrix)}"
+            )
         order = self.find_order(matrix)
         cofactor_matrix = []
         for i in range(order[0]):
