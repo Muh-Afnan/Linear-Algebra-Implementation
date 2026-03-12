@@ -1,6 +1,76 @@
 import copy
-
 class MatrixOperations:
+
+    def __init__(self, data):
+        self.data = data
+        self.rows = len(data)
+        self.cols = len(data[0])
+
+    
+    def shape(self):
+        return (self.rows, self.cols)
+    
+
+    def __add__(self, other):
+        if self.shape() != other.shape():
+            raise ValueError(
+                f"Matrix dimensions not compatible for addition. "
+                f"Got shapes: {self.shape()} and {other.shape()}"
+            )
+        result = [[item1+item2 for item1,item2 in zip(row1,row2)] for row1,row2 in zip(self.data,other.data)]
+        return result
+    
+    def __sub__(self, other):
+        if self.shape() != other.shape():
+            raise ValueError(
+                f"Matrix dimensions not compatible for subtraction. "
+                f"Got shapes: {self.shape()} and {other.shape()}"
+            )
+        result = [[item1-item2 for item1,item2 in zip(row1,row2)] for row1,row2 in zip(self.data,other.data)]
+        return result
+
+    def __rmul__(self, scalar):  # scalar * A
+        return [[item * scalar for item in row] for row in self.data]
+
+    
+    def __mul__(self, other):   # A * scalar or A * B
+        if isinstance(other, (int, float)):
+            result = [[item*other for item in row] for row in self.data]
+            return result
+        elif self.shape() != other.shape():
+            raise ValueError(
+                f"Matrix dimensions not compatible for multiplication. "
+                f"Got shapes: {self.shape()} and {other.shape()}"
+            )
+        result = [[item1*item2 for item1,item2 in zip(row1,row2)] for row1,row2 in zip(self.data,other.data)]
+        return result
+    
+    def __matmul__(self, other): # A @ B
+        if self.shape()[1] != other.shape()[0]:
+            raise ValueError(
+                f"Matrix dimensions not compatible for matrix multiplication. "
+                f"Got shapes: {self.shape()} and {other.shape()}"
+            )
+        result = []
+        other_trans = [list(row) for row in zip(*other.data)]
+        for row in self.data:
+            new_row = []
+            for other_row in other_trans:
+                sum_product = sum(item1*item2 for item1,item2 in zip(row,other_row))
+                new_row.append(sum_product)
+            result.append(new_row)
+        return result
+    
+    def __eq__(self, other):
+        if self.shape() != other.shape():
+            return False        
+        return all(item1 == item2 for row1, row2 in zip(self.data, other.data) for item1, item2 in zip(row1, row2))
+
+    def __repr__(self):
+        rows = ['[' + ', '.join(str(x) for x in row) + ']' for row in self.data]
+        return '[' + '\n '.join(rows) + ']'
+    
+
     def validate_addition(self, array):
         orders = [self.find_order(matrix) for matrix in array]
         if len(set(orders)) != 1:
@@ -89,7 +159,7 @@ class MatrixOperations:
         except ValueError as e:
             raise ValueError(
                 f"Chain multiplication failed: {e}"
-            ) from e          # 'from e' preserves original traceback
+            ) from e    
         result = array[0]
         for matrix in array[1:]:
             result = self.matrix_multiply(result, matrix)
@@ -135,7 +205,7 @@ class MatrixOperations:
         scaled_row = [item * factor for item in matrix[row-1]]
         matrix_new = copy.deepcopy(matrix)
         matrix_new[row-1] = scaled_row
-        return matrix,matrix_new
+        return matrix_new
     
     def zero_matrix_check(self,matrix):
         for row in matrix:
@@ -263,5 +333,3 @@ class MatrixOperations:
         adjoint = self.cal_adjoint(matrix)
         inverse = self.scalar_multiplication(1/det,adjoint)
         return inverse
-
-    
