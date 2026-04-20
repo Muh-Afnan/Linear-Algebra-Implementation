@@ -9,7 +9,7 @@ Kept separate so they can be used independently or in tests
 without importing the full Matrix object.
 """
 
-from src.validator import MatrixValidator
+from .validator import MatrixValidator
 
 
 def zeros(rows: int, cols: int) -> list[list[float]]:

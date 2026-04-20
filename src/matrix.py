@@ -20,8 +20,8 @@ Usage:
 """
 
 import copy
-from src.validator import MatrixValidator
-from src import utils
+from .validator import MatrixValidator
+from . import utils
 
 
 class Matrix:
@@ -107,6 +107,24 @@ class Matrix:
             for row in self.data
         ]
         return Matrix(result)
+    
+    def __truediv__(self, scalar: int | float) -> "Matrix":
+        if scalar == 0:
+            raise ValueError("Cannot divide by zero")
+
+        return Matrix([
+            [item / scalar for item in row]
+            for row in self.data
+        ])
+    
+    def __floordiv__(self, scalar: int | float) -> "Matrix":
+        if scalar == 0:
+            raise ValueError("Cannot divide by zero")
+
+        return Matrix([
+            [item // scalar for item in row]
+            for row in self.data
+        ])
 
     # ------------------------------------------------------------------
     # Core matrix operations

@@ -23,8 +23,8 @@ Usage:
     inv = inverse(A)
 """
 
-from src.matrix import Matrix
-from src.operations import (
+from .matrix import Matrix
+from .operations import (
     determinant,
     inverse,
     cofactor_matrix,

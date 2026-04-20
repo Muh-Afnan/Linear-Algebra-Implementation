@@ -15,9 +15,9 @@ All functions are pure — they take Matrix objects and return new Matrix object
 or scalars. Nothing is mutated.
 """
 
-from src.matrix import Matrix
-from src.validator import MatrixValidator
-from src.utils import build_minor
+from .matrix import Matrix
+from .validator import MatrixValidator
+from .utils import build_minor
 
 
 def determinant(matrix: Matrix) -> int | float:
